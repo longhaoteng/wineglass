@@ -36,7 +36,7 @@ func main() {
 }
 ```
 
-## [More examples](https://github.com/longhaoteng/wineglass/_examples)
+## [More examples](https://github.com/longhaoteng/wineglass/blob/master/_examples)
 
 ## License
 [MIT License](https://github.com/longhaoteng/wineglass/blob/master/LICENSE)
