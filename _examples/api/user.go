@@ -13,10 +13,6 @@ type User struct {
 	api wineglass.API
 }
 
-type FetchUser struct {
-	Name string
-}
-
 func (u *User) Router(r *gin.Engine) {
 	r.GET("/user/:name", u.fetchUser)
 }
