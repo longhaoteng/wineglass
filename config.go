@@ -65,11 +65,13 @@ type Session struct {
 	// Register global module
 	GobModels []interface{}
 	// Session store use redis.
-	// Ref: https://godoc.org/github.com/boj/redistore#NewRediStoreWithDB
-	Redis *struct {
-		Size                  int
-		Address, Password, DB string
-	}
+	Redis *SessionRedis
+}
+
+// Ref: https://godoc.org/github.com/boj/redistore#NewRediStoreWithDB
+type SessionRedis struct {
+	Size                  int
+	Address, Password, DB string
 }
 
 type Authorize struct {
