@@ -19,7 +19,14 @@ const (
 )
 
 func (m *Middleware) Authorizer() gin.HandlerFunc {
-	a := &BasicAuthorizer{enforcer: m.Authorize.Enforcer, conf: m.Authorize}
+	a := &BasicAuthorizer{
+		enforcer:    m.Authorize.Enforcer,
+		sessionConf: m.Session,
+		authConf:    m.Authorize,
+	}
+	if len(a.sessionConf.Name) == 0 {
+		a.sessionConf.Name = DefaultName
+	}
 
 	return func(c *gin.Context) {
 		role := a.GetUserRole(c)
@@ -37,19 +44,20 @@ func (m *Middleware) Authorizer() gin.HandlerFunc {
 }
 
 type BasicAuthorizer struct {
-	enforcer *casbin.Enforcer
-	conf     *Authorize
+	enforcer    *casbin.Enforcer
+	sessionConf *Session
+	authConf    *Authorize
 }
 
 func (a *BasicAuthorizer) GetUserRole(c *gin.Context) string {
-	if _, err := c.Cookie("session"); err != nil {
+	if _, err := c.Cookie(a.sessionConf.Name); err != nil {
 		return Anonymous
 	}
 	session := sessions.Default(c)
 
 	var sessionKey string
-	if len(a.conf.SessionKey) > 0 {
-		sessionKey = a.conf.SessionKey
+	if len(a.authConf.SessionKey) > 0 {
+		sessionKey = a.authConf.SessionKey
 	} else {
 		sessionKey = DefaultSessionKey
 	}
