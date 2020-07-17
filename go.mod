@@ -12,7 +12,7 @@ require (
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/go-redis/redis/v7 v7.2.0
-	github.com/sirupsen/logrus v1.6.0
+	github.com/pkg/errors v0.9.1
 	github.com/ulule/limiter/v3 v3.5.0
 	golang.org/x/text v0.3.3
 )

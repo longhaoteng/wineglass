@@ -3,6 +3,7 @@
 package wineglass
 
 import (
+	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -12,7 +13,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	et "github.com/go-playground/validator/v10/translations/en"
 	zt "github.com/go-playground/validator/v10/translations/zh"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/text/language"
 	"net/http"
 	"runtime"
@@ -94,15 +94,10 @@ func (a *API) Err(resp *Response, err error) {
 		resp.HttpStatus = http.StatusInternalServerError
 
 		pc, file, line, ok := runtime.Caller(1)
-		fields := log.Fields{}
 		if ok {
-			fields = log.Fields{
-				"file": file,
-				"line": line,
-				"func": runtime.FuncForPC(pc).Name(),
-			}
+			fmt.Printf("[Wineglass] [ERROR] %+v\n%+v\n\t%+v:%+v\n", err, runtime.FuncForPC(pc).Name(), file, line)
 		}
-		log.WithFields(fields).Error(err)
+
 	}
 }
 

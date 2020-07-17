@@ -3,10 +3,11 @@
 package wineglass
 
 import (
+	"fmt"
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -67,7 +68,7 @@ func (a *BasicAuthorizer) GetUserRole(c *gin.Context) string {
 		// rest ttl
 		session.Set(sessionKey, role)
 		if err := session.Save(); err != nil {
-			log.Error(err)
+			fmt.Printf("%+v\n", errors.New(err.Error()))
 		}
 		return role.(string)
 	}

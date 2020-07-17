@@ -3,13 +3,15 @@
 package wineglass
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v7"
-	log "github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 	"github.com/ulule/limiter/v3"
 	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
 	sredis "github.com/ulule/limiter/v3/drivers/store/redis"
+	"log"
 	"net/http"
 	"time"
 )
@@ -47,7 +49,7 @@ func (m *Middleware) RateLimiter() gin.HandlerFunc {
 		var err error
 		rateLimiterStore, err = sredis.NewStoreWithOptions(client, storeOptions)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("%+v\n", errors.New(err.Error()))
 		}
 	default:
 		rateLimiterStore = memory.NewStoreWithOptions(storeOptions)
@@ -55,13 +57,13 @@ func (m *Middleware) RateLimiter() gin.HandlerFunc {
 
 	rate, err := limiter.NewRateFromFormatted(conf.Limit)
 	if err != nil {
-		log.Fatalf("rate limiter conf.limit: %v",err)
+		log.Fatalf("%+v\n", errors.New(fmt.Sprintf("rate limiter conf.limit: %v", err.Error())))
 	}
 
 	return mgin.NewMiddleware(
 		limiter.New(rateLimiterStore, rate),
 		mgin.WithErrorHandler(func(c *gin.Context, err error) {
-			log.Errorln(err)
+			fmt.Printf("%+v\n", errors.New(err.Error()))
 			c.Next()
 		}),
 		mgin.WithLimitReachedHandler(func(c *gin.Context) {

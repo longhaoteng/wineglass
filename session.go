@@ -8,7 +8,8 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
+	"log"
 )
 
 const (
@@ -38,7 +39,7 @@ func (m *Middleware) Sessions() gin.HandlerFunc {
 			[]byte(conf.Secret),
 		)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("%+v\n", errors.New(err.Error()))
 		}
 	default:
 		sessionStore = cookie.NewStore([]byte(conf.Secret))
