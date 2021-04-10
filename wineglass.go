@@ -3,10 +3,16 @@
 package wineglass
 
 import (
+	"fmt"
+	"runtime"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
-	"runtime"
+)
+
+var (
+	routers []Router
 )
 
 type Wineglass struct {
@@ -33,7 +39,15 @@ func Default() *Wineglass {
 	})
 }
 
-// Used for default wineglass update run mode.
+func Routers(rs ...Router) {
+	routers = append(routers, rs...)
+}
+
+func (w *Wineglass) ApiEngine() *gin.Engine {
+	return w.router
+}
+
+// SetMode Used for default wineglass update run mode.
 func (w *Wineglass) SetMode(mode string) {
 	w.Config.RunMode = mode
 }
@@ -44,7 +58,7 @@ func (w *Wineglass) setupRouter() {
 	w.router = router
 }
 
-func (w *Wineglass) Routers(routers ...Router) *gin.Engine {
+func (w *Wineglass) init() *gin.Engine {
 	w.setupRouter()
 
 	apiCtl := new(API)
@@ -84,6 +98,7 @@ func (w *Wineglass) Routers(routers ...Router) *gin.Engine {
 	// 404
 	w.router.NoRoute(apiCtl.API404)
 
+	fmt.Println(len(routers))
 	for _, r := range routers {
 		r.Router(w.router)
 	}
@@ -99,7 +114,7 @@ func (w *Wineglass) Run(addr ...string) error {
 	gin.SetMode(w.Config.RunMode)
 
 	if w.router == nil {
-		w.setupRouter()
+		w.init()
 	}
 
 	if err := w.router.Run(addr...); err != nil {

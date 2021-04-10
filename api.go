@@ -1,9 +1,12 @@
-// @author mr.long
-
 package wineglass
 
 import (
 	"fmt"
+	"net/http"
+	"runtime"
+	"strings"
+	"time"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -14,10 +17,6 @@ import (
 	et "github.com/go-playground/validator/v10/translations/en"
 	zt "github.com/go-playground/validator/v10/translations/zh"
 	"golang.org/x/text/language"
-	"net/http"
-	"runtime"
-	"strings"
-	"time"
 )
 
 var (
@@ -41,11 +40,11 @@ type Router interface {
 type API struct{}
 
 type Response struct {
+	HttpStatus int
 	Code       int
 	Message    interface{}
 	Data       interface{}
-	HttpStatus int
-	Exception  *Error
+	Err        *Error
 }
 
 func (a *API) Validator() {
@@ -68,10 +67,12 @@ func (a *API) Verify(c *gin.Context, obj interface{}) (bool, *Response) {
 	if err := c.ShouldBind(obj); err != nil {
 		resp.HttpStatus = http.StatusBadRequest
 		if vErrors, ok := err.(validator.ValidationErrors); ok {
-			trans := enTrans
-			tags, _, _ := language.ParseAcceptLanguage(c.GetHeader("Accept-Language"))
-			if len(tags) > 0 && strings.Contains(strings.ToLower(tags[0].String()), "zh") {
+			var trans ut.Translator
+			switch getLan(c) {
+			case "zh":
 				trans = zhTrans
+			default:
+				trans = enTrans
 			}
 			vErrs := vErrors.Translate(trans)
 			errs := make(map[string]string)
@@ -89,7 +90,7 @@ func (a *API) Verify(c *gin.Context, obj interface{}) (bool, *Response) {
 
 func (a *API) Err(resp *Response, err error) {
 	if e, ok := err.(*Error); ok {
-		resp.Exception = e
+		resp.Err = e
 	} else {
 		resp.HttpStatus = http.StatusInternalServerError
 
@@ -97,7 +98,6 @@ func (a *API) Err(resp *Response, err error) {
 		if ok {
 			fmt.Printf("[Wineglass] [ERROR] %+v\n%+v\n\t%+v:%+v\n", err, runtime.FuncForPC(pc).Name(), file, line)
 		}
-
 	}
 }
 
@@ -110,9 +110,9 @@ func (a *API) Resp(c *gin.Context, r *Response) {
 		code = r.HttpStatus
 		r.Code = r.HttpStatus
 	}
-	if r.Exception != nil {
-		r.Code = r.Exception.ErrCode()
-		r.Message = r.Exception.Error()
+	if r.Err != nil {
+		r.Code = r.Err.ErrCode()
+		r.Message = r.Err.ErrMsg(getLan(c))
 	}
 	if r.Code == 0 {
 		r.Code = code
@@ -146,4 +146,18 @@ func (a *API) Delete(resp *Response, c *gin.Context, key interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func getLan(c *gin.Context) string {
+	tags, _, _ := language.ParseAcceptLanguage(c.GetHeader("Accept-Language"))
+	if len(tags) > 0 {
+		str := strings.ToLower(tags[0].String())
+		switch {
+		case strings.Contains(str, "zh"):
+			return "zh"
+		default:
+			return "en"
+		}
+	}
+	return "en"
 }

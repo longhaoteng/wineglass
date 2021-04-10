@@ -1,5 +1,3 @@
-// @author mr.long
-
 package api
 
 import (
@@ -15,4 +13,8 @@ func (p *Ping) Router(r *gin.Engine) {
 	r.GET("/ping", func(c *gin.Context) {
 		p.api.Resp(c, &wineglass.Response{Data: "pong"})
 	})
+}
+
+func init() {
+	wineglass.Routers(&Ping{})
 }

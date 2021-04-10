@@ -1,25 +1,24 @@
-// @author mr.long
-
 package wineglass
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v7"
+	"github.com/go-redis/redis/v8"
 	"github.com/pkg/errors"
 	"github.com/ulule/limiter/v3"
 	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
 	sredis "github.com/ulule/limiter/v3/drivers/store/redis"
-	"log"
-	"net/http"
-	"time"
 )
 
 const (
-	// Limiter Store use memory
+	// RateLimitMemoryStore Limiter Store use memory
 	RateLimitMemoryStore = "memory"
-	// Limiter Store use redis
+	// RateLimitRedisStore Limiter Store use redis
 	RateLimitRedisStore = "redis"
 )
 
@@ -34,9 +33,6 @@ func (m *Middleware) RateLimiter() gin.HandlerFunc {
 
 		if len(storeOptions.Prefix) == 0 {
 			storeOptions.Prefix = "limiter"
-		}
-		if storeOptions.MaxRetry == 0 {
-			storeOptions.MaxRetry = 3
 		}
 	}
 

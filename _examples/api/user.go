@@ -1,12 +1,11 @@
-// @author mr.long
-
 package api
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/longhaoteng/wineglass"
 	"github.com/longhaoteng/wineglass/_examples/err"
-	"strings"
 )
 
 type User struct {
@@ -23,4 +22,8 @@ func (u *User) fetchUser(c *gin.Context) {
 		u.api.Err(resp, err.UserNotFoundErr)
 	}
 	u.api.Resp(c, resp)
+}
+
+func init() {
+	wineglass.Routers(&User{})
 }

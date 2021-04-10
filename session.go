@@ -4,20 +4,21 @@ package wineglass
 
 import (
 	"encoding/gob"
+	"log"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"log"
 )
 
 const (
 	DefaultName = "session"
 
-	// Session Store use cookie
+	// SessionCookieStore Session Store use cookie
 	SessionCookieStore = "cookie"
-	// Session Store use redis
+	// SessionRedisStore Session Store use redis
 	SessionRedisStore = "redis"
 )
 

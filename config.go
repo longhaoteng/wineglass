@@ -1,5 +1,3 @@
-// @author mr.long
-
 package wineglass
 
 import (
@@ -7,7 +5,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v7"
+	"github.com/go-redis/redis/v8"
 	"github.com/ulule/limiter/v3"
 )
 
@@ -20,7 +18,7 @@ const (
 	TestMode = "test"
 )
 
-// Wineglass config
+// Config Wineglass config
 type Config struct {
 	// RunMode sets gin mode according to input string.
 	RunMode string
@@ -68,7 +66,7 @@ type Session struct {
 	Redis *SessionRedis
 }
 
-// Ref: https://godoc.org/github.com/boj/redistore#NewRediStoreWithDB
+// SessionRedis Ref: https://godoc.org/github.com/boj/redistore#NewRediStoreWithDB
 type SessionRedis struct {
 	Size                  int
 	Address, Password, DB string

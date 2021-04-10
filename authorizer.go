@@ -1,21 +1,20 @@
-// @author mr.long
-
 package wineglass
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 const (
 	DefaultSessionKey = "role"
-	// no session
+	// Anonymous no session
 	Anonymous = "anonymous"
-	// expired session
+	// Unemployed expired session
 	Unemployed = "unemployed"
 )
 

@@ -1,9 +1,8 @@
-// @author mr.long
-
 package api
 
 import (
 	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/longhaoteng/wineglass"
 )
@@ -32,4 +31,8 @@ func (h *Hello) postSay(c *gin.Context) {
 		resp.Data = fmt.Sprintf("hello %v", req.Name)
 		h.api.Resp(c, resp)
 	}
+}
+
+func init() {
+	wineglass.Routers(&Hello{})
 }
