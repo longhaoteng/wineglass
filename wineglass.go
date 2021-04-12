@@ -3,7 +3,6 @@
 package wineglass
 
 import (
-	"fmt"
 	"runtime"
 
 	"github.com/gin-contrib/cors"
@@ -98,7 +97,6 @@ func (w *Wineglass) init() *gin.Engine {
 	// 404
 	w.router.NoRoute(apiCtl.API404)
 
-	fmt.Println(len(routers))
 	for _, r := range routers {
 		r.Router(w.router)
 	}
