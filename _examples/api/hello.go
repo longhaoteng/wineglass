@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/longhaoteng/wineglass"
+	"github.com/longhaoteng/wineglass/api"
+	"github.com/longhaoteng/wineglass/server"
 )
 
 type Hello struct {
-	api wineglass.API
+	api api.API
 }
 
 type SayHello struct {
@@ -21,7 +22,7 @@ func (h *Hello) Router(r *gin.Engine) {
 }
 
 func (h *Hello) getSay(c *gin.Context) {
-	h.api.Resp(c, &wineglass.Response{Data: fmt.Sprintf("hello %v", c.Param("name"))})
+	h.api.Resp(c, &api.Response{Data: fmt.Sprintf("hello %v", c.Param("name"))})
 }
 
 func (h *Hello) postSay(c *gin.Context) {
@@ -34,5 +35,5 @@ func (h *Hello) postSay(c *gin.Context) {
 }
 
 func init() {
-	wineglass.Routers(&Hello{})
+	server.AddRouters(&Hello{})
 }

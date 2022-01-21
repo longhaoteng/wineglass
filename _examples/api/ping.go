@@ -2,19 +2,20 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/longhaoteng/wineglass"
+	"github.com/longhaoteng/wineglass/api"
+	"github.com/longhaoteng/wineglass/server"
 )
 
 type Ping struct {
-	api wineglass.API
+	api api.API
 }
 
 func (p *Ping) Router(r *gin.Engine) {
 	r.GET("/ping", func(c *gin.Context) {
-		p.api.Resp(c, &wineglass.Response{Data: "pong"})
+		p.api.Resp(c, &api.Response{Data: "pong"})
 	})
 }
 
 func init() {
-	wineglass.Routers(&Ping{})
+	server.AddRouters(&Ping{})
 }

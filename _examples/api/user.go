@@ -4,12 +4,13 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/longhaoteng/wineglass"
-	"github.com/longhaoteng/wineglass/_examples/err"
+	"github.com/longhaoteng/wineglass/_examples/errors"
+	"github.com/longhaoteng/wineglass/api"
+	"github.com/longhaoteng/wineglass/server"
 )
 
 type User struct {
-	api wineglass.API
+	api api.API
 }
 
 func (u *User) Router(r *gin.Engine) {
@@ -17,13 +18,13 @@ func (u *User) Router(r *gin.Engine) {
 }
 
 func (u *User) fetchUser(c *gin.Context) {
-	resp := &wineglass.Response{}
+	resp := &api.Response{}
 	if !strings.EqualFold(c.Param("name"), "wineglass") {
-		u.api.Err(resp, err.UserNotFoundErr)
+		u.api.Err(resp, errors.UserNotFoundErr)
 	}
 	u.api.Resp(c, resp)
 }
 
 func init() {
-	wineglass.Routers(&User{})
+	server.AddRouters(&User{})
 }

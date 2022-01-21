@@ -1,20 +1,23 @@
 package main
 
 import (
-	"log"
-
-	"github.com/longhaoteng/wineglass"
 	_ "github.com/longhaoteng/wineglass/_examples/api"
+	_ "github.com/longhaoteng/wineglass/_examples/cron"
+	_ "github.com/longhaoteng/wineglass/_examples/db"
+	_ "github.com/longhaoteng/wineglass/_examples/handler"
+	"github.com/longhaoteng/wineglass/server"
 )
 
 func main() {
-	w := wineglass.Default()
-	w.SetMode(wineglass.DebugMode)
+	// Init server
+	server.Init(
+		server.Name("helloworld"),
+		server.EnablePprof(),
+		server.DisableDB(),
+		server.DisableAuth(),
+		server.DisableRedis(),
+	)
 
-	// defined port
-	// w.Run(fmt.Sprintf(":%d", 9999))
-
-	if err := w.Run(); err != nil {
-		log.Fatalf("Failed to listen: %v", err)
-	}
+	// Run server
+	server.Run()
 }
