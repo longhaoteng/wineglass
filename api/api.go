@@ -34,21 +34,25 @@ func (a *API) API404(c *gin.Context) {
 	a.Resp(c, &Response{HttpStatus: http.StatusNotFound})
 }
 
-func (a *API) Err(resp *Response, err error) {
+func (a *API) Err(r *Response, err error) {
 	switch e := err.(type) {
 	case *Error:
-		resp.Err = e
+		r.Err = e
 	default:
-		resp.HttpStatus = http.StatusInternalServerError
+		r.HttpStatus = http.StatusInternalServerError
 	}
 }
 
-func (a *API) ErrResp(c *gin.Context, resp *Response, err error) {
-	a.Err(resp, err)
-	a.Resp(c, resp)
+func (a *API) ErrResp(c *gin.Context, r *Response, err error) {
+	a.Err(r, err)
+	a.resp(c, r, true)
 }
 
 func (a *API) Resp(c *gin.Context, r *Response) {
+	a.resp(c, r, false)
+}
+
+func (a *API) resp(c *gin.Context, r *Response, abort bool) {
 	code := http.StatusOK
 	if r == nil {
 		r = &Response{}
@@ -67,6 +71,11 @@ func (a *API) Resp(c *gin.Context, r *Response) {
 	if r.Message == nil {
 		r.Message = http.StatusText(code)
 	}
+
+	if abort {
+		c.Abort()
+	}
+
 	c.JSON(code, gin.H{
 		"code":      r.Code,
 		"msg":       r.Message,
