@@ -12,8 +12,13 @@ import (
 	"github.com/longhaoteng/wineglass/db"
 )
 
+const (
+	ruleDBName    = "auth"
+	ruleTableName = "rule"
+)
+
 var (
-	//go:embed rbac.conf
+	//go:embed model.conf
 	conf string
 	//go:embed policy.csv
 	policy string
@@ -31,7 +36,7 @@ func Init() error {
 			return err
 		}
 	} else {
-		a, err := gormadapter.NewAdapterByDB(db.DB)
+		a, err := gormadapter.NewAdapterByDBUseTableName(db.DB, ruleDBName, ruleTableName)
 		if err != nil {
 			return err
 		}
