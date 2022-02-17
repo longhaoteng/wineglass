@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/longhaoteng/wineglass/api/auth"
+	"github.com/longhaoteng/wineglass/config"
+	"github.com/longhaoteng/wineglass/conv"
 )
 
 // Interface api interface
@@ -111,10 +113,29 @@ func (a *API) Delete(c *gin.Context, key interface{}) error {
 }
 
 func (a *API) SetToken(c *gin.Context, id int64, state bool) error {
-	session := sessions.Default(c)
-	session.Set(auth.TokenKey, &auth.User{ID: id, State: state})
-	if err := session.Save(); err != nil {
-		return err
+	return a.Set(c, auth.TokenKey, &auth.User{ID: id, State: state})
+}
+
+func (a *API) GetToken(c *gin.Context) *auth.User {
+	user := a.Get(c, auth.TokenKey)
+	if u, ok := user.(*auth.User); ok {
+		return u
 	}
-	return nil
+	return &auth.User{}
+}
+
+func (a *API) GetRoles(c *gin.Context) []string {
+	return auth.Enforcer().GetRolesForUserInDomain(
+		conv.FormatInt64(a.GetToken(c).ID),
+		config.Service.Name,
+	)
+}
+
+func (a *API) HasRole(c *gin.Context, role string) bool {
+	for _, r := range a.GetRoles(c) {
+		if r == role {
+			return true
+		}
+	}
+	return false
 }

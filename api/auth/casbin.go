@@ -53,6 +53,10 @@ func Init() error {
 	return nil
 }
 
+func Enforcer() *casbin.Enforcer {
+	return e
+}
+
 func Enforce(vs ...interface{}) (bool, error) {
 	return e.Enforce(vs...)
 }
