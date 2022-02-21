@@ -15,6 +15,8 @@ type dbConf struct {
 	Port         int    `json:"port"`
 	DBName       string `json:"name"`
 	LowThreshold int    `json:"low_threshold"`
+	MaxOpenConns int    `json:"max_open_conns"`
+	MaxIdleConns int    `json:"max_idle_conns"`
 }
 
 func (d *dbConf) init() error {
@@ -26,6 +28,14 @@ func (d *dbConf) init() error {
 	if err != nil {
 		return err
 	}
+	maxOpenConns, err := env.GetInt("DB_MAX_OPEN_CONNS", 100)
+	if err != nil {
+		return err
+	}
+	maxIdleConns, err := env.GetInt("DB_MAX_IDLE_CONNS", 25)
+	if err != nil {
+		return err
+	}
 	DB = &dbConf{
 		User:         env.GetString("DB_USER", "root"),
 		Password:     env.GetString("DB_PASSWORD", ""),
@@ -33,6 +43,8 @@ func (d *dbConf) init() error {
 		Port:         port,
 		DBName:       env.GetString("DB_NAME", Service.Name),
 		LowThreshold: lowThreshold,
+		MaxOpenConns: maxOpenConns,
+		MaxIdleConns: maxIdleConns,
 	}
 
 	return nil

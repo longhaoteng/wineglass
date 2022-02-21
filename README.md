@@ -47,6 +47,8 @@ export DB_USER="root"
 export DB_PASSWORD=""
 export DB_NAME=${serviceName}
 export DB_LOW_THRESHOLD=0
+export DB_MAX_OPEN_CONNS=100
+export DB_MAX_IDLE_CONNS=25
 ```
 
 ```go
