@@ -56,6 +56,13 @@ func Init() error {
 		return err
 	}
 
+	sqldb, err := DB.DB()
+	if err != nil {
+		return err
+	}
+	sqldb.SetMaxOpenConns(config.DB.MaxOpenConns)
+	sqldb.SetMaxIdleConns(config.DB.MaxIdleConns)
+
 	for _, repository := range repositories {
 		if err = DB.AutoMigrate(repository); err != nil {
 			return err
