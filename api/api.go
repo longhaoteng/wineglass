@@ -47,14 +47,15 @@ func (a *API) Err(r *Response, err error) {
 
 func (a *API) ErrResp(c *gin.Context, r *Response, err error) {
 	a.Err(r, err)
-	a.resp(c, r, true)
+	c.Abort()
+	c.JSON(a.resp(c, r))
 }
 
 func (a *API) Resp(c *gin.Context, r *Response) {
-	a.resp(c, r, false)
+	c.JSON(a.resp(c, r))
 }
 
-func (a *API) resp(c *gin.Context, r *Response, abort bool) {
+func (a *API) resp(c *gin.Context, r *Response) (int, *gin.H) {
 	code := http.StatusOK
 	if r == nil {
 		r = &Response{}
@@ -74,16 +75,12 @@ func (a *API) resp(c *gin.Context, r *Response, abort bool) {
 		r.Message = http.StatusText(code)
 	}
 
-	if abort {
-		c.Abort()
-	}
-
-	c.JSON(code, gin.H{
+	return r.Code, &gin.H{
 		"code":      r.Code,
 		"msg":       r.Message,
 		"data":      r.Data,
 		"timestamp": time.Now().Unix(),
-	})
+	}
 }
 
 func (a *API) Get(c *gin.Context, key interface{}) interface{} {
