@@ -47,7 +47,6 @@ func (a *API) Err(r *Response, err error) {
 
 func (a *API) ErrResp(c *gin.Context, r *Response, err error) {
 	a.Err(r, err)
-	c.Abort()
 	c.JSON(a.resp(c, r))
 }
 
@@ -75,7 +74,7 @@ func (a *API) resp(c *gin.Context, r *Response) (int, *gin.H) {
 		r.Message = http.StatusText(code)
 	}
 
-	return r.Code, &gin.H{
+	return code, &gin.H{
 		"code":      r.Code,
 		"msg":       r.Message,
 		"data":      r.Data,
