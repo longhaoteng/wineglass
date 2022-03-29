@@ -2,136 +2,141 @@ package api
 
 import (
 	"net/http"
-	"reflect"
 	"time"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-
-	"github.com/longhaoteng/wineglass/api/auth"
-	"github.com/longhaoteng/wineglass/config"
-	"github.com/longhaoteng/wineglass/conv"
 )
 
-// Interface api interface
-type Interface interface {
-	Validator()
-	API404(c *gin.Context)
-	Verify(c *gin.Context, obj interface{}) (bool, *Response)
-	Err(resp *Response, err error)
-	Resp(c *gin.Context, r *Response)
+const ctxKey = "ctx"
+
+type API struct {
+	Session *Session
 }
 
-type API struct{}
-
-type Response struct {
-	HttpStatus int
-	Code       int
-	Message    interface{}
-	Data       interface{}
-	Err        *Error
-}
-
-func (a *API) API404(c *gin.Context) {
-	a.Resp(c, &Response{HttpStatus: http.StatusNotFound})
-}
-
-func (a *API) Err(r *Response, err error) {
-	switch e := err.(type) {
-	case *Error:
-		r.Err = e
-	default:
-		r.HttpStatus = http.StatusInternalServerError
+func NewApi() *API {
+	return &API{
+		Session: &Session{},
 	}
 }
 
-func (a *API) ErrResp(c *gin.Context, r *Response, err error) {
-	a.Err(r, err)
-	c.JSON(a.resp(c, r))
+func NoRoute(c *gin.Context) {
+	a := NewApi()
+	a.HttpStatus(c, http.StatusNotFound)
+	a.Resp(c)
 }
 
-func (a *API) Resp(c *gin.Context, r *Response) {
-	c.JSON(a.resp(c, r))
+func (a *API) Context(c *gin.Context) *Context {
+	apiCtx, exists := c.Get(ctxKey)
+	if !exists {
+		ctx := NewContext()
+		c.Set(ctxKey, ctx)
+		return ctx
+	}
+	return apiCtx.(*Context)
 }
 
-func (a *API) resp(c *gin.Context, r *Response) (int, *gin.H) {
-	code := http.StatusOK
-	if r == nil {
-		r = &Response{}
-	}
-	if r.HttpStatus != 0 {
-		code = r.HttpStatus
-		r.Code = r.HttpStatus
-	}
-	if r.Err != nil {
-		r.Code = r.Err.ErrCode()
-		r.Message = r.Err.ErrMsg(GetLan(c))
-	}
-	if r.Code == 0 {
-		r.Code = code
-	}
-	if r.Message == nil {
-		r.Message = http.StatusText(code)
-	}
-
-	return code, &gin.H{
-		"code":      r.Code,
-		"msg":       r.Message,
-		"data":      r.Data,
-		"timestamp": time.Now().Unix(),
-	}
+func (a *API) HttpStatus(c *gin.Context, status int) {
+	a.Context(c).Response().SetHttpStatus(status)
 }
 
-func (a *API) Get(c *gin.Context, key interface{}) interface{} {
-	session := sessions.Default(c)
-	return session.Get(key)
+func (a *API) Data(c *gin.Context, data interface{}) {
+	a.Context(c).Response().SetData(data)
 }
 
-func (a *API) Set(c *gin.Context, key interface{}, val interface{}) error {
-	if reflect.ValueOf(val).IsNil() {
-		return nil
+func (a *API) Verify(c *gin.Context, req interface{}) bool {
+	return a.Verifies(c, req, c.ShouldBind)
+}
+
+func (a *API) Verifies(c *gin.Context, bindsAndFuncs ...interface{}) bool {
+	if len(bindsAndFuncs) == 0 {
+		return true
 	}
-	session := sessions.Default(c)
-	session.Set(key, val)
-	if err := session.Save(); err != nil {
-		return err
+
+	var binds []Bind
+	for i := 0; i < len(bindsAndFuncs); {
+		bindObj := bindsAndFuncs[i]
+		if i+1 < len(bindsAndFuncs) {
+			bindFunc := bindsAndFuncs[i+1]
+			if f, ok := bindFunc.(func(obj interface{}) error); ok {
+				binds = append(binds, Bind{
+					Obj:  bindObj,
+					Func: f,
+				})
+			}
+		}
+		i += 2
 	}
-	return nil
-}
 
-func (a *API) Delete(c *gin.Context, key interface{}) error {
-	session := sessions.Default(c)
-	session.Delete(key)
-	if err := session.Save(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *API) SetToken(c *gin.Context, id int64, state bool) error {
-	return a.Set(c, auth.TokenKey, &auth.User{ID: id, State: state})
-}
-
-func (a *API) GetToken(c *gin.Context) *auth.User {
-	user := a.Get(c, auth.TokenKey)
-	if u, ok := user.(*auth.User); ok {
-		return u
-	}
-	return &auth.User{}
-}
-
-func (a *API) GetRoles(c *gin.Context) []string {
-	return auth.Enforcer().GetRolesForUserInDomain(
-		conv.FormatInt64(a.GetToken(c).ID),
-		config.Service.Name,
-	)
-}
-
-func (a *API) HasRole(c *gin.Context, role string) bool {
-	for _, r := range a.GetRoles(c) {
-		if r == role {
-			return true
+	for _, bind := range binds {
+		_, msg := bind.Verify(c)
+		if msg != nil {
+			ctx := a.Context(c)
+			ctx.Response().SetHttpStatus(http.StatusBadRequest)
+			ctx.Response().SetMsg(msg)
+			a.Resp(c)
+			return false
 		}
 	}
-	return false
+	return true
+}
+
+func (a *API) Groups(c *gin.Context, groups ...string) {
+	ctx := a.Context(c)
+	ctx.AddGroups(groups...)
+}
+
+func (a *API) Err(c *gin.Context, err error) {
+	ctx := a.Context(c)
+	switch e := err.(type) {
+	case *Error:
+		ctx.Response().SetErr(e)
+	default:
+		ctx.Response().SetHttpStatus(http.StatusInternalServerError)
+	}
+}
+
+func (a *API) ErrResp(c *gin.Context, err error) {
+	a.Err(c, err)
+	a.Resp(c)
+	c.Abort()
+}
+
+func (a *API) Resp(c *gin.Context) {
+	if c.IsAborted() {
+		return
+	}
+
+	ctx := a.Context(c)
+	code := a.parseResp(c)
+	if len(ctx.Groups()) == 0 {
+		c.JSON(code, ctx.Response())
+	} else {
+		c.Render(code, DiffGroupsJSON{
+			Groups: ctx.Groups(),
+			Data:   ctx.Response(),
+		})
+	}
+}
+
+func (a *API) parseResp(c *gin.Context) int {
+	code := http.StatusOK
+	ctx := a.Context(c)
+	resp := ctx.Response()
+	resp.SetTime(time.Now().Unix())
+	if resp.HttpStatus() != 0 {
+		code = resp.HttpStatus()
+		resp.Code = resp.HttpStatus()
+	}
+	if resp.Err() != nil {
+		resp.SetCode(resp.Err().ErrCode())
+		resp.SetMsg(resp.Err().ErrMsg(GetLanguage(c)))
+	}
+	if resp.GetCode() == 0 {
+		resp.SetCode(code)
+	}
+	if resp.Msg() == nil {
+		resp.SetMsg(http.StatusText(code))
+	}
+
+	return code
 }

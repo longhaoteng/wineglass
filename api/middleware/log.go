@@ -24,7 +24,7 @@ func (l *Log) Init() ([]gin.HandlerFunc, error) {
 		func(c *gin.Context) {
 			start := time.Now()
 			c.Next()
-			latency := fmt.Sprintf("%v", time.Now().Sub(start))
+			latency := fmt.Sprintf("%v", time.Since(start))
 			path := c.Request.URL.Path
 			raw := c.Request.URL.RawQuery
 			if raw != "" {

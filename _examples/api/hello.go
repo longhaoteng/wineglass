@@ -9,7 +9,7 @@ import (
 )
 
 type Hello struct {
-	api api.API
+	*api.API
 }
 
 type SayHello struct {
@@ -22,16 +22,23 @@ func (h *Hello) Router(r *gin.Engine) {
 }
 
 func (h *Hello) getSay(c *gin.Context) {
-	h.api.Resp(c, &api.Response{Data: fmt.Sprintf("hello %v", c.Param("name"))})
+	h.Data(c, fmt.Sprintf("hello %v", c.Param("name")))
+	h.Resp(c)
 }
 
 func (h *Hello) postSay(c *gin.Context) {
 	req := &SayHello{}
 	// Verify required fields in the &SayHello{} struct, if name is empty, response 400.
-	if bind, resp := h.api.Verify(c, req); bind {
-		resp.Data = fmt.Sprintf("hello %v", req.Name)
-		h.api.Resp(c, resp)
+	if h.Verify(c, req) {
+		h.Data(c, fmt.Sprintf("hello %v", req.Name))
+		h.Resp(c)
 	}
+	// multiple parameters
+	// if h.Verifies(
+	// 	c,
+	// 	reqForPath, c.ShouldBindUri,
+	// 	reqForBody, c.ShouldBind,
+	// ) {}
 }
 
 func init() {

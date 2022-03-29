@@ -10,7 +10,7 @@ import (
 )
 
 type User struct {
-	api api.API
+	*api.API
 }
 
 func (u *User) Router(r *gin.Engine) {
@@ -18,11 +18,10 @@ func (u *User) Router(r *gin.Engine) {
 }
 
 func (u *User) fetchUser(c *gin.Context) {
-	resp := &api.Response{}
 	if !strings.EqualFold(c.Param("name"), "wineglass") {
-		u.api.Err(resp, errors.UserNotFoundErr)
+		u.ErrResp(c, errors.UserNotFoundErr)
 	}
-	u.api.Resp(c, resp)
+	u.Resp(c)
 }
 
 func init() {

@@ -65,8 +65,8 @@ func (l *Limiter) Init() ([]gin.HandlerFunc, error) {
 				code := http.StatusTooManyRequests
 				c.JSON(code, gin.H{
 					"code":      code,
-					"msg":       api.StatusTooManyRequests.ErrMsg(api.GetLan(c)),
 					"data":      nil,
+					"msg":       api.StatusTooManyRequests.ErrMsg(api.GetLanguage(c)),
 					"timestamp": time.Now().Unix(),
 				})
 			}),
@@ -76,5 +76,5 @@ func (l *Limiter) Init() ([]gin.HandlerFunc, error) {
 }
 
 func init() {
-	AddMiddlewares(NewEntry(&Limiter{}, 0))
+	AddMiddlewares(NewEntry(&Limiter{}))
 }

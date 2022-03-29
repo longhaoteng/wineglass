@@ -1,7 +1,6 @@
 package api
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -15,81 +14,80 @@ import (
 	"golang.org/x/text/language"
 )
 
+const defaultLocale = "en"
+
 var (
-	enTrans ut.Translator
-	zhTrans ut.Translator
+	trans       = make(map[string]ut.Translator)
+	localeAlias = make(map[string]string)
 )
 
+type BindFunc func(obj interface{}) error
+
 type Bind struct {
-	Fun func(obj interface{}) error
-	Obj interface{}
+	Obj  interface{}
+	Func BindFunc
 }
 
-func (a *API) Validator() {
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		uni := ut.New(en.New(), zh.New())
-		enTrans, _ = uni.GetTranslator("en")
-		zhTrans, _ = uni.GetTranslator("zh")
-		_ = et.RegisterDefaultTranslations(v, enTrans)
-		_ = zt.RegisterDefaultTranslations(v, zhTrans)
+func AddTranslator(locale string, t *ut.Translator, alias ...string) {
+	trans[locale] = *t
+
+	localeAlias[locale] = locale
+	for _, a := range alias {
+		localeAlias[strings.ToLower(a)] = locale
 	}
 }
 
-func (a *API) Verify(c *gin.Context, obj interface{}) (bool, *Response) {
-	return a.verify(c, c.ShouldBind, obj)
+func AddLocaleAlias(locale, alias string) {
+	localeAlias[strings.ToLower(alias)] = locale
 }
 
-func (a *API) Verifies(c *gin.Context, binds ...Bind) (bind bool, resp *Response) {
-	for _, b := range binds {
-		bind, resp = a.verify(c, b.Fun, b.Obj)
-		if !bind {
-			return bind, resp
-		}
-	}
-
-	return
-}
-
-func GetLan(c *gin.Context) string {
+func GetLanguage(c *gin.Context) string {
 	tags, _, _ := language.ParseAcceptLanguage(c.GetHeader("Accept-Language"))
 	if len(tags) > 0 {
-		str := strings.ToLower(tags[0].String())
-		switch {
-		case strings.Contains(str, "zh"):
-			return "zh"
-		default:
-			return "en"
+		tag := strings.ToLower(tags[0].String())
+		if locale, ok := localeAlias[tag]; ok {
+			return locale
 		}
 	}
-	return "en"
+	return defaultLocale
 }
 
-func (a *API) verify(c *gin.Context, fun func(obj interface{}) error, obj interface{}) (bool, *Response) {
-	bind := false
-	resp := &Response{}
-	if err := fun(obj); err != nil {
-		resp.HttpStatus = http.StatusBadRequest
+func Validator() error {
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		uni := ut.New(en.New(), zh.New())
+		enTrans, _ := uni.GetTranslator("en")
+		zhTrans, _ := uni.GetTranslator("zh")
+		if err := et.RegisterDefaultTranslations(v, enTrans); err != nil {
+			return err
+		}
+		if err := zt.RegisterDefaultTranslations(v, zhTrans); err != nil {
+			return err
+		}
+		AddTranslator("en", &enTrans, "en-US", "en-GB")
+		AddTranslator("zh", &zhTrans, "zh-CN")
+	}
+	return nil
+}
+
+func (b *Bind) Verify(c *gin.Context) (bool, interface{}) {
+	if err := b.Func(b.Obj); err != nil {
 		if vErrors, ok := err.(validator.ValidationErrors); ok {
-			var trans ut.Translator
-			switch GetLan(c) {
-			case "zh":
-				trans = zhTrans
-			default:
-				trans = enTrans
+			translator := trans[defaultLocale]
+			if locale, ok := localeAlias[GetLanguage(c)]; ok {
+				if t, ok := trans[locale]; ok {
+					translator = t
+				}
 			}
-			vErrs := vErrors.Translate(trans)
+			vErrs := vErrors.Translate(translator)
 			errs := make(map[string]string)
 			for s := range vErrs {
 				errs[strings.ToLower(strings.Split(s, ".")[1])] = vErrs[s]
 			}
-			resp.Message = errs
+			return false, errs
 		} else {
-			resp.Message = err.Error()
+			return false, err.Error()
 		}
-		a.Resp(c, resp)
-	} else {
-		bind = true
 	}
 
-	return bind, resp
+	return true, nil
 }

@@ -104,8 +104,8 @@ func (a *BasicAuthorizer) RequirePermission(c *gin.Context) {
 func (a *BasicAuthorizer) Abort(c *gin.Context, code int, msg string) {
 	c.AbortWithStatusJSON(code, gin.H{
 		"code":      code,
-		"msg":       msg,
 		"data":      nil,
+		"msg":       msg,
 		"timestamp": time.Now().Unix(),
 	})
 }

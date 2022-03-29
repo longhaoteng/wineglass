@@ -6,21 +6,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	entries []Entry
-)
+var entries []Entry
 
 type Middleware interface {
 	Init() ([]gin.HandlerFunc, error)
 }
 
 type Entry struct {
-	m     Middleware
+	mw    Middleware
 	order int
 }
 
 func (e *Entry) Middleware() Middleware {
-	return e.m
+	return e.mw
 }
 
 func (e *Entry) Order() int {
@@ -31,9 +29,14 @@ func AddMiddlewares(es ...Entry) {
 	entries = append(entries, es...)
 }
 
-func NewEntry(m Middleware, order int) Entry {
+func NewEntry(m Middleware, orders ...int) Entry {
+	order := 0
+	if len(orders) > 0 {
+		order = orders[0]
+	}
+
 	return Entry{
-		m:     m,
+		mw:    m,
 		order: order,
 	}
 }

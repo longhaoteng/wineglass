@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/gin-contrib/pprof"
@@ -57,9 +58,10 @@ func (a *apiEntry) init(opts ...Option) error {
 	}
 	gin.SetMode(env)
 
-	capi := &coreapi.API{}
-	a.r.NoRoute(capi.API404)
-	capi.Validator()
+	a.r.NoRoute(coreapi.NoRoute)
+	if err := coreapi.Validator(); err != nil {
+		return err
+	}
 
 	if config.IsDevEnv() {
 		a.r.Use(gin.LoggerWithFormatter(logFormatter), gin.Recovery())
@@ -89,6 +91,16 @@ func (a *apiEntry) run() error {
 	}
 
 	for _, r := range a.routers {
+		router := reflect.ValueOf(r).Elem()
+		capi := coreapi.NewApi()
+		field := router.FieldByName("API")
+		switch field.Kind() {
+		case reflect.Ptr:
+			field.Set(reflect.ValueOf(capi))
+		case reflect.Struct:
+			field.Set(reflect.ValueOf(*capi))
+		}
+
 		r.Router(a.r)
 	}
 

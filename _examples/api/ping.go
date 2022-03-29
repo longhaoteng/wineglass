@@ -7,12 +7,13 @@ import (
 )
 
 type Ping struct {
-	api api.API
+	*api.API
 }
 
 func (p *Ping) Router(r *gin.Engine) {
 	r.GET("/ping", func(c *gin.Context) {
-		p.api.Resp(c, &api.Response{Data: "pong"})
+		p.Data(c, "pong")
+		p.Resp(c)
 	})
 }
 

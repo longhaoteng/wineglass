@@ -17,5 +17,5 @@ func (c *Cors) Init() ([]gin.HandlerFunc, error) {
 }
 
 func init() {
-	AddMiddlewares(NewEntry(&Cors{}, 0))
+	AddMiddlewares(NewEntry(&Cors{}))
 }
