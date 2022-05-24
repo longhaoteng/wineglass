@@ -25,6 +25,13 @@ func NoRoute(c *gin.Context) {
 	a.Resp(c)
 }
 
+func (a *API) Handler(c *gin.Context, f func(resp *Response) error) {
+	if err := f(a.Context(c).Response()); err != nil {
+		a.ErrResp(c, err)
+	}
+	a.Resp(c)
+}
+
 func (a *API) Context(c *gin.Context) *Context {
 	apiCtx, exists := c.Get(ctxKey)
 	if !exists {
