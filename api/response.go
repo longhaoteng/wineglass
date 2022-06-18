@@ -5,7 +5,7 @@ type Response struct {
 	err        *Error
 	Code       int         `json:"code"`
 	Data       interface{} `json:"data"`
-	Message    interface{} `json:"message"`
+	Message    interface{} `json:"msg"`
 	Timestamp  int64       `json:"timestamp"`
 }
 
