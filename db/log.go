@@ -36,15 +36,15 @@ func (l *dbLog) LogMode(gormlog.LogLevel) gormlog.Interface {
 }
 
 func (l *dbLog) Info(ctx context.Context, s string, args ...interface{}) {
-	l.entry.WithContext(ctx).Infof(s, args)
+	l.entry.WithContext(ctx).Infof(s, args...)
 }
 
 func (l *dbLog) Warn(ctx context.Context, s string, args ...interface{}) {
-	l.entry.WithContext(ctx).Warnf(s, args)
+	l.entry.WithContext(ctx).Warnf(s, args...)
 }
 
 func (l *dbLog) Error(ctx context.Context, s string, args ...interface{}) {
-	l.entry.WithContext(ctx).Errorf(s, args)
+	l.entry.WithContext(ctx).Errorf(s, args...)
 }
 
 func (l *dbLog) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
