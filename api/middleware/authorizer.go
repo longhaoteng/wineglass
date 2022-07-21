@@ -86,7 +86,7 @@ func (a *BasicAuthorizer) CheckPermission(r *http.Request, id int64) (bool, erro
 }
 
 func (a *BasicAuthorizer) TryAgainLater(c *gin.Context) {
-	a.Abort(c, http.StatusBadGateway, "try again later")
+	a.Abort(c, http.StatusInternalServerError, "try again later")
 }
 
 func (a *BasicAuthorizer) RequireLogIn(c *gin.Context) {
@@ -94,7 +94,7 @@ func (a *BasicAuthorizer) RequireLogIn(c *gin.Context) {
 }
 
 func (a *BasicAuthorizer) RequireReLogIn(c *gin.Context) {
-	a.Abort(c, 499, "invalid login")
+	a.Abort(c, http.StatusUnauthorized, "invalid login")
 }
 
 func (a *BasicAuthorizer) RequirePermission(c *gin.Context) {
