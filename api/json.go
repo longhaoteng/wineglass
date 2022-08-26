@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/liip/sheriff"
+	"github.com/longhaoteng/sheriff"
 )
 
 var jsonContentType = []string{"application/json; charset=utf-8"}
