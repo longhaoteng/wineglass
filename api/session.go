@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/thoas/go-funk"
+	"github.com/samber/lo"
 
 	"github.com/longhaoteng/wineglass/api/auth"
 	"github.com/longhaoteng/wineglass/config"
@@ -60,5 +60,5 @@ func (s *Session) GetRoles(c *gin.Context) []string {
 }
 
 func (s *Session) HasRole(c *gin.Context, role string) bool {
-	return funk.ContainsString(s.GetRoles(c), role)
+	return lo.Contains(s.GetRoles(c), role)
 }

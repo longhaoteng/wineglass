@@ -13,8 +13,8 @@ func Wrapper(wrapper *JobWrapper) Option {
 	}
 }
 
-func SingleNode(singleNode bool) Option {
+func SingleNode() Option {
 	return func(o *Options) {
-		o.SingleNode = singleNode
+		o.SingleNode = true
 	}
 }
