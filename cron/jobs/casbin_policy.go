@@ -19,7 +19,7 @@ func (c *CasbinPolicy) Spec() string {
 
 func (c *CasbinPolicy) Options() []cron.Option {
 	return []cron.Option{
-		cron.Wrapper(&cron.DelayIfStillRunning),
+		cron.Wrappers(cron.Recover, cron.DelayIfStillRunning),
 	}
 }
 

@@ -3,13 +3,13 @@ package cron
 type Option func(*Options)
 
 type Options struct {
-	Wrapper    *JobWrapper
+	Wrappers   []JobWrapper
 	SingleNode bool
 }
 
-func Wrapper(wrapper *JobWrapper) Option {
+func Wrappers(wrappers ...JobWrapper) Option {
 	return func(o *Options) {
-		o.Wrapper = wrapper
+		o.Wrappers = append(o.Wrappers, wrappers...)
 	}
 }
 

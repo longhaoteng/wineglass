@@ -46,18 +46,20 @@ func Init() error {
 		var cronJob cron.Job = job
 
 		if opt.SingleNode {
+			// loop variables captured by 'func' literals in 'go' statements might have unexpected values
+			entryJob := job
 			cronJob = cron.FuncJob(func() {
-				l := lock.NewLock(fmt.Sprintf("%s_cron_single_node_%s", config.Service.Name, job.Name()))
+				l := lock.NewLock(fmt.Sprintf("cron_single_node_%s_%s", config.Service.Name, entryJob.Name()))
 				if !l.Lock() {
 					return
 				}
-				job.Run()
+				entryJob.Run()
 				l.UnLock()
 			})
 		}
 
-		if opt.Wrapper != nil {
-			cronJob = cron.NewChain(*(opt.Wrapper)).Then(cronJob)
+		if len(opt.Wrappers) > 0 {
+			cronJob = cron.NewChain(opt.Wrappers...).Then(cronJob)
 		}
 
 		_, err = c.AddJob(job.Spec(), cronJob)

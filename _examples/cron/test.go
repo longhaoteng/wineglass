@@ -17,7 +17,7 @@ func (t *Test) Spec() string {
 
 func (t *Test) Options() []cron.Option {
 	return []cron.Option{
-		cron.Wrapper(&cron.DelayIfStillRunning),
+		cron.Wrappers(cron.Recover, cron.DelayIfStillRunning),
 	}
 }
 
