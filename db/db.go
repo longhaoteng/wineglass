@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
@@ -29,19 +30,25 @@ func AddRepositories(dbRepositories ...Repository) {
 
 func Init() error {
 	var err error
+	var dialect gorm.Dialector
 
-	dialect := mysql.New(
-		mysql.Config{
-			DSN: fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local",
-				config.DB.User,
-				config.DB.Password,
-				config.DB.Host,
-				config.DB.Port,
-				config.DB.DBName,
-			),
-			DefaultStringSize: 255, // add default size for string fields, by default, will use db type `longtext` for fields without size, not a primary key, no index defined and don't have default values
-		},
-	)
+	switch config.DB.Driver {
+	case "mysql":
+		dialect = mysql.New(
+			mysql.Config{
+				DSN: fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local",
+					config.DB.User,
+					config.DB.Password,
+					config.DB.Host,
+					config.DB.Port,
+					config.DB.DBName,
+				),
+				DefaultStringSize: 255, // add default size for string fields, by default, will use db type `longtext` for fields without size, not a primary key, no index defined and don't have default values
+			},
+		)
+	case "sqlite":
+		dialect = sqlite.Open(fmt.Sprintf("%s.db", config.DB.DBName))
+	}
 
 	cfg := &gorm.Config{
 		PrepareStmt: true,

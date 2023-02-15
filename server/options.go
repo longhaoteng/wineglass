@@ -32,6 +32,18 @@ func Version(v string) Option {
 	}
 }
 
+func DBDriver(d string) Option {
+	return func(o *Options) {
+		config.DB.Driver = d
+	}
+}
+
+func HttpAddr(h string) Option {
+	return func(o *Options) {
+		config.Service.HttpAddr = h
+	}
+}
+
 // EnablePprof server enable pprof
 func EnablePprof() Option {
 	return func(o *Options) {

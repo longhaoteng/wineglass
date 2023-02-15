@@ -9,6 +9,7 @@ var (
 )
 
 type dbConf struct {
+	Driver       string `json:"driver"`
 	User         string `json:"user"`
 	Password     string `json:"password"`
 	Host         string `json:"host"`
@@ -47,6 +48,7 @@ func (d *dbConf) init() error {
 		return err
 	}
 	DB = &dbConf{
+		Driver:       env.GetString("DB_DRIVER", "mysql"),
 		User:         env.GetString("DB_USER", "root"),
 		Password:     env.GetString("DB_PASSWORD", ""),
 		Host:         env.GetString("DB_HOST", "localhost"),
