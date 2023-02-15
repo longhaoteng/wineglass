@@ -41,11 +41,6 @@ func Init(opts ...Option) {
 		},
 	}
 
-	// service name
-	for _, o := range opts {
-		o(srv.opts)
-	}
-
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
@@ -64,7 +59,6 @@ func Init(opts ...Option) {
 		),
 	)
 
-	// other option
 	for _, o := range opts {
 		o(srv.opts)
 	}

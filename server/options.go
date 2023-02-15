@@ -21,9 +21,9 @@ type Options struct {
 type Option func(*Options)
 
 func Name(n string) Option {
-	return func(o *Options) {
-		config.Service.Name = n
-	}
+	// config依赖，直接赋值
+	config.Service.Name = n
+	return func(o *Options) {}
 }
 
 func Version(v string) Option {
