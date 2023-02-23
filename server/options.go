@@ -65,6 +65,13 @@ func DisableAuth() Option {
 	}
 }
 
+// DisableLimiter server not use limiter
+func DisableLimiter() Option {
+	return func(o *Options) {
+		config.Limiter.Limit = ""
+	}
+}
+
 // DisableRedis server not use redis
 func DisableRedis() Option {
 	return func(o *Options) {

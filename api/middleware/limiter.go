@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,10 @@ import (
 type Limiter struct{}
 
 func (l *Limiter) Init() ([]gin.HandlerFunc, error) {
+	if strings.EqualFold(config.Limiter.Limit, "") {
+		return []gin.HandlerFunc{}, nil
+	}
+
 	var limiterStore limiter.Store
 
 	storeOptions := limiter.StoreOptions{
