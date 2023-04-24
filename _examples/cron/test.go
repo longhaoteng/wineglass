@@ -28,3 +28,7 @@ func (t *Test) Run() {
 func (t *Test) execute() {
 	log.Info("coon test")
 }
+
+func init() {
+	cron.AddJobs(&Test{})
+}

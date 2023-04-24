@@ -66,39 +66,39 @@ func Fields(keysAndValues ...interface{}) *Logger {
 }
 
 func Log(level Level, v ...interface{}) {
-	log.entry.Log(level, v...)
+	log.entry.WithFields(logrus.Fields{}).Log(level, v...)
 }
 
 func Trace(args ...interface{}) {
-	log.entry.Trace(args...)
+	log.entry.WithFields(logrus.Fields{}).Log(TraceLevel, args...)
 }
 
 func Debug(args ...interface{}) {
-	log.entry.Debug(args...)
+	log.entry.WithFields(logrus.Fields{}).Log(DebugLevel, args...)
 }
 
 func Info(args ...interface{}) {
-	log.entry.Info(args...)
+	log.entry.WithFields(logrus.Fields{}).Log(InfoLevel, args...)
 }
 
 func Warn(args ...interface{}) {
-	log.entry.Warn(args...)
+	log.entry.WithFields(logrus.Fields{}).Log(WarnLevel, args...)
 }
 
 func Error(args ...interface{}) {
-	log.entry.Error(args...)
+	log.entry.WithFields(logrus.Fields{}).Log(ErrorLevel, args...)
 }
 
 func Fatal(args ...interface{}) {
-	log.entry.Fatal(args...)
+	log.entry.WithFields(logrus.Fields{}).Log(FatalLevel, args...)
 }
 
 func Panic(args ...interface{}) {
-	log.entry.Panic(args...)
+	log.entry.WithFields(logrus.Fields{}).Log(PanicLevel, args...)
 }
 
 func Logf(level Level, format string, v ...interface{}) {
-	log.entry.Logf(level, format, v...)
+	log.entry.WithFields(logrus.Fields{}).Logf(level, format, v...)
 }
 
 func (l *Logger) Log(level Level, v ...interface{}) {
