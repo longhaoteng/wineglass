@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	libredis "github.com/go-redis/redis/v8"
+	libredis "github.com/redis/go-redis/v9"
 	"github.com/ulule/limiter/v3"
 	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
@@ -37,15 +37,15 @@ func (l *Limiter) Init() ([]gin.HandlerFunc, error) {
 	case consts.RedisStore:
 		var err error
 		client := libredis.NewClient(&libredis.Options{
-			DB:           config.Redis.DB,
-			Addr:         config.Redis.Addrs[0],
-			PoolSize:     512,
-			PoolTimeout:  10 * time.Second,
-			IdleTimeout:  10 * time.Second,
-			DialTimeout:  10 * time.Second,
-			ReadTimeout:  3 * time.Second,
-			WriteTimeout: 3 * time.Second,
-			Password:     config.Redis.Password,
+			DB:              config.Redis.DB,
+			Addr:            config.Redis.Addrs[0],
+			PoolSize:        512,
+			PoolTimeout:     10 * time.Second,
+			ConnMaxIdleTime: 10 * time.Second,
+			DialTimeout:     10 * time.Second,
+			ReadTimeout:     3 * time.Second,
+			WriteTimeout:    3 * time.Second,
+			Password:        config.Redis.Password,
 		})
 		limiterStore, err = sredis.NewStoreWithOptions(client, storeOptions)
 		if err != nil {

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/longhaoteng/wineglass/config"
 	"github.com/longhaoteng/wineglass/consts"
@@ -39,26 +39,26 @@ func Init() error {
 
 	if len(addrs) == 1 {
 		client = redis.NewClient(&redis.Options{
-			DB:           config.Redis.DB,
-			Addr:         addrs[0],
-			PoolSize:     poolSize,
-			PoolTimeout:  poolTimeout,
-			IdleTimeout:  idleTimeout,
-			DialTimeout:  dialTimeout,
-			ReadTimeout:  readTimeout,
-			WriteTimeout: writeTimeout,
-			Password:     password,
+			DB:              config.Redis.DB,
+			Addr:            addrs[0],
+			PoolSize:        poolSize,
+			PoolTimeout:     poolTimeout,
+			ConnMaxIdleTime: idleTimeout,
+			DialTimeout:     dialTimeout,
+			ReadTimeout:     readTimeout,
+			WriteTimeout:    writeTimeout,
+			Password:        password,
 		})
 	} else {
 		client = redis.NewClusterClient(&redis.ClusterOptions{
-			Addrs:        addrs,
-			PoolSize:     poolSize,
-			PoolTimeout:  poolTimeout,
-			IdleTimeout:  idleTimeout,
-			DialTimeout:  dialTimeout,
-			ReadTimeout:  readTimeout,
-			WriteTimeout: writeTimeout,
-			Password:     password,
+			Addrs:           addrs,
+			PoolSize:        poolSize,
+			PoolTimeout:     poolTimeout,
+			ConnMaxIdleTime: idleTimeout,
+			DialTimeout:     dialTimeout,
+			ReadTimeout:     readTimeout,
+			WriteTimeout:    writeTimeout,
+			Password:        password,
 		})
 	}
 
@@ -84,9 +84,6 @@ func Client() redis.Cmdable {
 }
 
 func Close() error {
-	if r.pipeline != nil {
-		return r.pipeline.Close()
-	}
 	return r.client.(redis.UniversalClient).Close()
 }
 
@@ -312,7 +309,7 @@ func SetArgs(ctx context.Context, key string, value interface{}, a redis.SetArgs
 }
 
 func SetEX(ctx context.Context, key string, value interface{}, expiration time.Duration) (string, error) {
-	return r.client.SetEX(ctx, WithPrefix(key), value, expiration).Result()
+	return r.client.SetEx(ctx, WithPrefix(key), value, expiration).Result()
 }
 
 func SetNX(ctx context.Context, key string, value interface{}, expiration time.Duration) (bool, error) {
@@ -672,11 +669,11 @@ func XClaimJustID(ctx context.Context, a *redis.XClaimArgs) ([]string, error) {
 }
 
 func XTrim(ctx context.Context, key string, maxLen int64) (int64, error) {
-	return r.client.XTrim(ctx, WithPrefix(key), maxLen).Result()
+	return r.client.XTrimMaxLen(ctx, WithPrefix(key), maxLen).Result()
 }
 
 func XTrimApprox(ctx context.Context, key string, maxLen int64) (int64, error) {
-	return r.client.XTrimApprox(ctx, WithPrefix(key), maxLen).Result()
+	return r.client.XTrimMaxLen(ctx, WithPrefix(key), maxLen).Result()
 }
 
 func XInfoGroups(ctx context.Context, key string) ([]redis.XInfoGroup, error) {
@@ -695,40 +692,16 @@ func BZPopMin(ctx context.Context, timeout time.Duration, keys ...string) (*redi
 	return r.client.BZPopMin(ctx, timeout, WithPrefixes(keys)...).Result()
 }
 
-func ZAdd(ctx context.Context, key string, members ...*redis.Z) (int64, error) {
+func ZAdd(ctx context.Context, key string, members ...redis.Z) (int64, error) {
 	return r.client.ZAdd(ctx, WithPrefix(key), members...).Result()
 }
 
-func ZAddNX(ctx context.Context, key string, members ...*redis.Z) (int64, error) {
+func ZAddNX(ctx context.Context, key string, members ...redis.Z) (int64, error) {
 	return r.client.ZAddNX(ctx, WithPrefix(key), members...).Result()
 }
 
-func ZAddXX(ctx context.Context, key string, members ...*redis.Z) (int64, error) {
+func ZAddXX(ctx context.Context, key string, members ...redis.Z) (int64, error) {
 	return r.client.ZAddXX(ctx, WithPrefix(key), members...).Result()
-}
-
-func ZAddCh(ctx context.Context, key string, members ...*redis.Z) (int64, error) {
-	return r.client.ZAddCh(ctx, WithPrefix(key), members...).Result()
-}
-
-func ZAddNXCh(ctx context.Context, key string, members ...*redis.Z) (int64, error) {
-	return r.client.ZAddNXCh(ctx, WithPrefix(key), members...).Result()
-}
-
-func ZAddXXCh(ctx context.Context, key string, members ...*redis.Z) (int64, error) {
-	return r.client.ZAddXXCh(ctx, WithPrefix(key), members...).Result()
-}
-
-func ZIncr(ctx context.Context, key string, member *redis.Z) (float64, error) {
-	return r.client.ZIncr(ctx, WithPrefix(key), member).Result()
-}
-
-func ZIncrNX(ctx context.Context, key string, member *redis.Z) (float64, error) {
-	return r.client.ZIncrNX(ctx, WithPrefix(key), member).Result()
-}
-
-func ZIncrXX(ctx context.Context, key string, member *redis.Z) (float64, error) {
-	return r.client.ZIncrXX(ctx, WithPrefix(key), member).Result()
 }
 
 func ZCard(ctx context.Context, key string) (int64, error) {
@@ -875,7 +848,7 @@ func ClientID(ctx context.Context) (int64, error) {
 	return r.client.ClientID(ctx).Result()
 }
 
-func ConfigGet(ctx context.Context, parameter string) ([]interface{}, error) {
+func ConfigGet(ctx context.Context, parameter string) (map[string]string, error) {
 	return r.client.ConfigGet(ctx, parameter).Result()
 }
 

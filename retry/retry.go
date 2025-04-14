@@ -3,7 +3,7 @@ package retry
 import (
 	"time"
 
-	rty "github.com/avast/retry-go"
+	rty "github.com/avast/retry-go/v4"
 )
 
 var (

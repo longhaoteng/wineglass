@@ -35,7 +35,7 @@ func (s *Session) Init() ([]gin.HandlerFunc, error) {
 			config.Redis.Addrs[0],
 			config.Redis.Password,
 			strconv.Itoa(config.Session.DB),
-			[]byte(config.Session.Secret),
+			config.Session.Secret,
 		)
 		if err != nil {
 			return nil, err
